@@ -37,11 +37,11 @@ function sleep(duration) {
 async function go() {
     while(true){
         changeColor('green')
-        await sleep(1000)
+        await sleep(10000)
         changeColor('yellow')
-        await sleep(500)
+        await sleep(2000)
         changeColor('red')
-        await sleep(500)
+        await sleep(5000)
     }
 }
 go();
