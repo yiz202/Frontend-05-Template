@@ -1,0 +1,194 @@
+<style>
+  .cell {
+    width: 100px;
+    height: 100px;
+    background-color: royalblue;
+    display: inline-block;
+    border: solid 1px white;
+    vertical-align: middle;
+
+    line-height: 100px;
+    font-size: 50px;
+    text-align: center;
+  }
+</style>
+
+<div id="board"></div>
+
+<script>
+  let pattern = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  let color = 1;
+
+  function show() {
+    let board = document.getElementById("board");
+
+    board.innerHTML = "";
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.innerText =
+          pattern[i * 3 + j] == 2 ? "❌" : pattern[i * 3 + j] == 1 ? "⭕" : "";
+        cell.addEventListener("click", () => userMove(i, j));
+        board.appendChild(cell);
+      }
+      board.appendChild(document.createElement("br"));
+    }
+  }
+  function userMove(x, y) {
+    if (pattern[x * 3 + y] !== 0) {
+      return;
+    }
+    pattern[x * 3 + y] = color;
+    if (check(x, y, pattern, color)) {
+      setTimeout(function () {
+        alert(color == 1 ? " ❌ is winner!" : " ⭕ is winner!");
+        location.reload();
+      }, 100);
+    }
+
+    color = 3 - color;
+    console.log(bestChoice(pattern, color));
+    show();
+    if (full()) {
+      setTimeout(function () {
+        alert("棋盘已满，和棋");
+        location.reload();
+      }, 100);
+    }
+    computerMove();
+  }
+  function computerMove() {
+    let choice = bestChoice(pattern, color);
+    if (choice.point) {
+      pattern[choice.point[0] * 3 + choice.point[1]] = color;
+    }
+    if (check(choice.point[0], choice.point[1], pattern, color)) {
+      setTimeout(function () {
+        alert(color == 1 ? " ❌ is winner!" : " ⭕ is winner!");
+        location.reload();
+      }, 100);
+    }
+    color = 3 - color;
+    show();
+    if (full()) {
+      setTimeout(function () {
+        alert("棋盘已满，和棋");
+        location.reload();
+      }, 100);
+    }
+  }
+  function check(x, y, pattern, color) {
+    {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[x * 3 + j] !== color) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+    {
+      let win = true;
+      for (let i = 0; i < 3; i++) {
+        if (pattern[i * 3 + y] !== color) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+    {
+      if (x == y) {
+        let win = true;
+        for (let i = 0; i < 3; i++) {
+          if (pattern[i * 3 + i] !== color) {
+            win = false;
+          }
+        }
+        if (win) {
+          return true;
+        }
+      }
+    }
+    {
+      if (x == 2 - y) {
+        let win = true;
+        for (let i = 0; i < 3; i++) {
+          if (pattern[i * 3 + 2 - i] !== color) {
+            win = false;
+          }
+        }
+        if (win) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  function willWin(pattern, color) {
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i * 3 + j] !== 0) {
+          continue;
+        }
+        let tmp = clone(pattern);
+        tmp[i * 3 + j] = color;
+        if (check(i, j, tmp, color)) {
+          return [i, j];
+        }
+      }
+    }
+    return null;
+  }
+  function clone(pattern) {
+    return Object.create(pattern);
+  }
+  function bestChoice(pattern, color) {
+    let p;
+    if ((p = willWin(pattern, color))) {
+      return {
+        point: p,
+        result: 1,
+      };
+    }
+    let result = -2;
+    let point = null;
+    outer: for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i * 3 + j] !== 0) {
+          continue;
+        }
+        let tmp = clone(pattern);
+        tmp[i * 3 + j] = color;
+        let r = bestChoice(tmp, 3 - color).result;
+        if (-r > result) {
+          result = -r;
+          point = [i, j];
+        }
+        if (result == 1) {
+          break outer;
+        }
+      }
+    }
+    return {
+      point: point,
+      result: point ? result : 0,
+    };
+  }
+  function full() {
+    let full = true;
+    for (let i = 0; i < 9; i++) {
+      if (pattern[i] == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  show();
+</script>
