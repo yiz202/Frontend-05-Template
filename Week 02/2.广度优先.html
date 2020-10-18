@@ -1,0 +1,79 @@
+<style>
+  .cell {
+    width: 7px;
+    height: 7px;
+    background-color: grey;
+    border: 1px solid white;
+  }
+  #container {
+    width: 700px;
+    flex-wrap: wrap;
+    /* height:700px; */
+    display: flex;
+  }
+</style>
+<div id="container"></div>
+
+<button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+<script>
+  let map = localStorage["map"]
+    ? JSON.parse(localStorage["map"])
+    : Array(10000).fill(0);
+  let container = document.getElementById("container");
+  for (let i = 0; i < 100; i++) {
+    for (let j = 0; j < 100; j++) {
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      if (map[i * 100 + j] == 1) {
+        cell.style.backgroundColor = "black";
+      }
+      cell.addEventListener("mousemove", () => {
+        if (mousedown) {
+          if (rightClick) {
+            cell.style.backgroundColor = "";
+            console.log("right");
+            map[i * 100 + j] = 0;
+          }
+          //leftclick
+          else {
+            cell.style.backgroundColor = "black";
+            map[i * 100 + j] = 1;
+          }
+        }
+      });
+      container.appendChild(cell);
+    }
+  }
+  let mousedown = false;
+  let rightClick = false;
+  document.addEventListener("mousedown", () => {
+    mousedown = true;
+  });
+  document.addEventListener("mouseup", () => {
+    mousedown = false;
+    rightClick = false;
+  });
+  document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    rightClick = true;
+  });
+
+  function findPath(map,start,end) {
+    var q = [start];
+    var direction = [[0,1],[0,-1],[1,0],[-1,0]];
+    while (q.length) {
+      let [x,y] = q.shift();
+      console.log([x,y])
+      if (x === end[0] && y === end[1]) return true;
+      if (0<=x< 100 && 0<=y<100 && map[y*100+x] === 0) {
+        map[y*100+x]= 2;
+        for(var i = 0; i< direction.length;i++) {
+          var nx = x+direction[i][0];
+          var ny = y+direction[i][1];
+          q.push([nx,ny])
+        }
+      }
+    }
+    return false;
+  }
+</script>

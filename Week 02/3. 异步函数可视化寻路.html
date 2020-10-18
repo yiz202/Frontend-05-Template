@@ -1,0 +1,108 @@
+<style>
+  .cell {
+    width: 6px;
+    height: 6px;
+    background-color: grey;
+    border-right: solid 1px white;
+    border-bottom: solid 1px white;
+  }
+  #container {
+    width: 701px;
+    flex-wrap: wrap;
+    display: flex;
+  }
+  /* .cell {
+    display: inline-block;
+    line-height: 7px;
+    vertical-align: top;
+    width: 6px;
+    height: 6px;
+    background-color: grey;
+    border-right: solid 1px white;
+    border-bottom: solid 1px white;
+  }
+  #container {
+    width: 701px;
+  } */
+</style>
+<div id="container"></div>
+
+<button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+<script>
+  let map = localStorage["map"]
+    ? JSON.parse(localStorage["map"])
+    : Array(10000).fill(0);
+  let container = document.getElementById("container");
+  for (let i = 0; i < 100; i++) {
+    for (let j = 0; j < 100; j++) {
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      if (map[i * 100 + j] == 1) {
+        cell.style.backgroundColor = "black";
+      }
+      cell.addEventListener("mousemove", () => {
+        if (mousedown) {
+          if (rightClick) {
+            cell.style.backgroundColor = "";
+            console.log("right");
+            map[i * 100 + j] = 0;
+          }
+          //leftclick
+          else {
+            cell.style.backgroundColor = "black";
+            map[i * 100 + j] = 1;
+          }
+        }
+      });
+      container.appendChild(cell);
+    }
+  }
+  let mousedown = false;
+  let rightClick = false;
+  document.addEventListener("mousedown", () => {
+    mousedown = true;
+  });
+  document.addEventListener("mouseup", () => {
+    mousedown = false;
+    rightClick = false;
+  });
+  document.addEventListener("contextmenu", (e) => {
+      // 防止菜单弹出
+    e.preventDefault();
+    rightClick = true;
+  });
+
+  function sleep(duration) {
+    return new Promise(function (resolve, reject) {
+      setTimeout(resolve, duration);
+    });
+  }
+
+  async function findPath(map, start, end) {
+    var q = [start];
+    var direction = [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ];
+    while (q.length) {
+        // destructuring
+      let [x, y] = q.shift();
+      let nx, ny;
+      if (x === end[0] && y === end[1]) return true;
+      if (0 <= x && x< 100 && 0 <= y&& y < 100 && map[y * 100 + x] === 0) {
+        await sleep(30);
+        // console.log([x, y]);
+        container.children[y * 100 + x].style.backgroundColor = "lightgreen";
+        map[y * 100 + x] = 2;
+        for (let i = 0; i < direction.length; i++) {
+          nx = x + direction[i][0];
+          ny = y + direction[i][1];
+          q.push([nx, ny]);
+        }
+      }
+    }
+    return false;
+  }
+</script>

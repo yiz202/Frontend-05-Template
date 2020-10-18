@@ -1,0 +1,152 @@
+<style>
+    .cell {
+      width: 6px;
+      height: 6px;
+      background-color: grey;
+      border-right: solid 1px white;
+      border-bottom: solid 1px white;
+    }
+    #container {
+      width: 701px;
+      flex-wrap: wrap;
+      display: flex;
+    }
+
+  </style>
+  <div id="container"></div>
+  
+  <button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+  <script>
+    class Sorted {
+      constructor(data, compare) {
+        this.data = data.slice();
+        this.compare = compare || ((a, b) => a - b);
+      }
+      take() {
+        if (!this.data.length) {
+          return;
+        }
+        let minIndex = 0;
+        let min = this.data[0];
+        for (let i = 1; i < this.data.length; i++) {
+          if (this.compare(this.data[i], min) < 0) {
+            min = this.data[i];
+            minIndex = i;
+          }
+        }
+        this.data[minIndex] = this.data[this.data.length - 1];
+        this.data.pop();
+        return min;
+      }
+      give(num) {
+        this.data.push(num);
+      }
+      get length() {
+          return this.data.length;
+      }
+    }
+    let map = localStorage["map"]
+      ? JSON.parse(localStorage["map"])
+      : Array(10000).fill(0);
+    let container = document.getElementById("container");
+    for (let i = 0; i < 100; i++) {
+      for (let j = 0; j < 100; j++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        if (map[i * 100 + j] == 1) {
+          cell.style.backgroundColor = "black";
+        }
+        cell.addEventListener("mousemove", () => {
+          if (mousedown) {
+            if (rightClick) {
+              cell.style.backgroundColor = "";
+              console.log("right");
+              map[i * 100 + j] = 0;
+            }
+            //leftclick
+            else {
+              cell.style.backgroundColor = "black";
+              map[i * 100 + j] = 1;
+            }
+          }
+        });
+        container.appendChild(cell);
+      }
+    }
+    let mousedown = false;
+    let rightClick = false;
+    document.addEventListener("mousedown", () => {
+      mousedown = true;
+    });
+    document.addEventListener("mouseup", () => {
+      mousedown = false;
+      rightClick = false;
+    });
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      rightClick = true;
+    });
+  
+    function sleep(duration) {
+      return new Promise(function (resolve, reject) {
+        setTimeout(resolve, duration);
+      });
+    }
+  
+    async function findPath(map, start, end) {
+        function distance(p) {
+            return (p[0]-end[0])**2+(p[1]-end[1])**2;
+        }
+      // 实现copy
+      let table = Object.create(map);
+      var q = new Sorted([start],((a,b)=>distance(a)-distance(b)));
+      var direction = [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0],
+        [-1, -1],
+        [-1, 1],
+        [1, 1],
+        [1, -1],
+      ];
+      while (q.length) {
+          //每次取离开终点最近的路线
+        let [x, y] = q.take();
+        let nx, ny;
+        if (x === end[0] && y === end[1]) {
+          let path = [];
+          while (x !== start[0] || y !== start[1]) {
+            path.push(table[y * 100 + x]);
+            // 利用上一个位置来回溯不停地找坐标
+            [x, y] = table[y * 100 + x];
+            await sleep(10);
+            container.children[y * 100 + x].style.backgroundColor = "purple";
+          }
+          console.log(path);
+          return path;
+        }
+        for (var i = 0; i < direction.length; i++) {
+          nx = x + direction[i][0];
+          ny = y + direction[i][1];
+          //注意这边check 新坐标
+          if (
+            0 <= nx &&
+            nx < 100 &&
+            0 <= ny &&
+            ny < 100 &&
+            map[ny * 100 + nx] === 0
+          ) {
+            container.children[ny * 100 + nx].style.backgroundColor =
+              "lightgreen";
+            map[ny * 100 + nx] = 2;
+            await sleep(1);
+            q.give([nx, ny]);
+            table[ny * 100 + nx] = [x, y];
+          }
+        }
+      }
+      return null;
+    }
+  </script>
+  
