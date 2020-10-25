@@ -1,0 +1,41 @@
+<script>
+  const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\+)|(\-)|(\*)|(\/)/g;
+  const dictionary = [
+    "Number",
+    "Whitespace",
+    "LineTerminator",
+    "+",
+    "-",
+    "*",
+    "/",
+  ];
+
+  function* tokenize(source) {
+    let result = null;
+    let lastIndex = 0;
+    while ((result = regexp.exec(source)) !== null) {
+      if (regexp.lastIndex - lastIndex > result[0].length) {
+        break;
+      }
+
+      lastIndex = regexp.lastIndex;
+      const token = {
+        type: null,
+        value: null,
+      };
+      for (let i = 1; i <= dictionary.length; i++) {
+        // result[0] 是整体匹配，result[1] 开始是各个分支的匹配结果
+        if (result[i]) {
+          token.type = dictionary[i - 1];
+        }
+      }
+      token.value = result[0];
+    //   console.log(token);
+      yield token;
+    }
+  }
+
+  for (const token of tokenize("10 + 9 - 22")) {
+    console.log(token);
+  }
+</script>

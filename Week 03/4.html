@@ -1,0 +1,95 @@
+<script>
+  const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\+)|(\-)|(\*)|(\/)/g;
+  const dictionary = [
+    "Number",
+    "Whitespace",
+    "LineTerminator",
+    "+",
+    "-",
+    "*",
+    "/",
+  ];
+
+  function* tokenize(source) {
+    let result = null;
+    let lastIndex = 0;
+    while ((result = regexp.exec(source)) !== null) {
+      if (regexp.lastIndex - lastIndex > result[0].length) {
+        break;
+      }
+
+      lastIndex = regexp.lastIndex;
+      const token = {
+        type: null,
+        value: null,
+      };
+      for (let i = 1; i <= dictionary.length; i++) {
+        // result[0] 是整体匹配，result[1] 开始是各个分支的匹配结果
+        if (result[i]) {
+          token.type = dictionary[i - 1];
+        }
+      }
+      token.value = result[0];
+      //   console.log(token);
+      yield token;
+    }
+  }
+  let source = []
+
+  for (let token of tokenize("10 * 25 / 2")) {
+    if(token.type!=="Whitespace" && token.type !== "LineTerminator") source.push(token)
+  }
+
+  function Expression(tokens) {}
+  function AddictiveExpression(source) {}
+  function MultiplicativeExpression(source) {}
+  function MultiplicativeExpression(source) {
+    if (source[0].type === "Number") {
+      let node = {
+        type: "MultiplicativeExpression",
+        children: [source[0]],
+      };
+      source[0] = node;
+      return MultiplicativeExpression(source);
+    }
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "*"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "*",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      source.unshift(node);
+      return MultiplicativeExpression(source);
+    }
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "/"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "*",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      source.unshift(node);
+      return MultiplicativeExpression(source);
+    }
+    if (source[0].type === "MultiplicativeExpression") {
+      return source[0];
+    }
+
+    return MultiplicativeExpression(source);
+  }
+
+  console.log(MultiplicativeExpression(source));
+</script>
