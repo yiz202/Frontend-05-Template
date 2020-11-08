@@ -1,0 +1,27 @@
+<script>
+  var obj = {
+    apple: 1,
+    orange: {
+      child: {
+        pineapple: {
+          tree: 30,
+        },
+      },
+      cat: ["russianblue", "ragdoll", "tabby"],
+    },
+  };
+
+  var dfs = function (obj) {
+    // base case
+    if (typeof obj !== "object" || obj === null) {
+      return obj;
+    }
+    const copy = obj instanceof Array ? [] : {};
+    for (let item in obj) {
+      let value = obj[item];
+      copy[item] = dfs(value);
+    }
+    return copy;
+  };
+  console.log(dfs(obj));
+</script>
