@@ -11,11 +11,16 @@
     // 记录跟原来的dragable相差的绝对位置
     baseX = baseX+ event.clientX-startX
     baseY = baseY+ event.clientY-startY
+    console.log('baseX',baseX)
+    console.log('baseY',baseY)
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", up);
     };
     let move = (event) => {
      // 跟开始的相对位置比较
+     console.log('clientX',event.clientX,'startX',startX,'relativeX',baseX+event.clientX-startX)
+     console.log('clientY',event.clientY,'startY',startY,'relativeY',baseY+event.clientY-startY)
+
       dragable.style.transform=`translate(${baseX+event.clientX-startX}px,${baseY+event.clientY-startY}px)`
     };
     // 移出viewport范围还是可以监听到, 如果document 变成dragable的话在dragable范围之外就听不到了

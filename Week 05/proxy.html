@@ -28,6 +28,8 @@
   // 数据控制DOM
   document
     .getElementById("r")
+    // 这一步po set r会用callback，即所有用过po.r 的函数callback都会call一下，从而使得总的控制color的effect执行，
+    //effect先 call 目的是把他们各自的callbackrecord好，好方便日后 call set了以后调用方便
     .addEventListener("input", (event) => (po.r = event.target.value));
 
   document

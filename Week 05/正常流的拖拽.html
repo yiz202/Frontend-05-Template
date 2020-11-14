@@ -1,21 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Drag</title>
-    <style>
-        .drag-box {
-            width: 100px;
-            height: 100px;
-            background-color: pink;
-        }
-        .text-container {
-            display: inline-block;
-        }
-    </style>
-</head>
-<body>
-<div class="text-container">
+
+<div id="container">文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
     文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
     文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
     文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
@@ -28,55 +12,66 @@
     文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
     文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
     文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
-    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
-    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
-</div>
-<div class="drag-box"></div>
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字</div>
+<div
+  id="dragable"
+  style="display: inline-block;width: 100px; height: 100px; background-color: pink"
+></div>
 <script>
-    document.addEventListener('selectstart', event => event.preventDefault())
-    let dragBox = document.getElementsByClassName('drag-box')[0]
-    let baseX = 0, baseY = 0
-    dragBox.addEventListener('mousedown', function(event){
-        let startX = event.clientX, startY = event.clientY
-        let up = event => {
-            baseX = baseX + event.clientX - startX
-            baseY = baseY + event.clientY - startY
-            document.removeEventListener('mouseup', up)
-            document.removeEventListener('mousemove', move)
-        }
-        let move = event => {
-            // dragBox.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`
-            let range = getNearest(event.clientX, event.clientY)
-            range.insertNode(dragBox)
-        }
-        document.addEventListener('mouseup', up)
-        document.addEventListener('mousemove', move)
-    })
+  let dragable = document.getElementById("dragable");
+  let baseX = 0, baseY = 0
+  dragable.addEventListener("mousedown", function (event) {
+      let startX = event.clientX, startY = event.clientY
+    let up = event => {
+    // 记录跟原来的dragable相差的绝对位置
+    baseX = baseX+ event.clientX-startX
+    baseY = baseY+ event.clientY-startY
+    console.log('baseX',baseX)
+    console.log('baseY',baseY)
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+    let move = (event) => {
+     // 跟开始的相对位置比较
+     console.log('clientX',event.clientX,'startX',startX,'relativeX',baseX+event.clientX-startX)
+     console.log('clientY',event.clientY,'startY',startY,'relativeY',baseY+event.clientY-startY)
 
-    let ranges = []
-    let contentWrap = document.getElementsByClassName('text-container')[0]
-    for (let i = 0; i < contentWrap.childNodes[0].textContent.length; i++) {
-        let range = document.createRange()
-        range.setStart(contentWrap.childNodes[0], i)
-        range.setEnd(contentWrap.childNodes[0], i)
-
-        console.log(range.getBoundingClientRect())
-        ranges.push(range)
-    }
-
-    function getNearest (x, y) {
-        let min = Infinity
-        let nearest = null
-        for (range of ranges) {
-            let rect = range.getBoundingClientRect()
-            let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2
-            if (distance < min) {
-                nearest = range
-                min = distance
-            }
+    //   dragable.style.transform=`translate(${baseX+event.clientX-startX}px,${baseY+event.clientY-startY}px)`
+    let range = getNearest(event.clientX,event.clientY)
+    // 原来在domtree上的元素都会默认把它先益处再插入
+    range.insertNode(dragable);
+    };
+    // 移出viewport范围还是可以监听到, 如果document 变成dragable的话在dragable范围之外就听不到了
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  });
+  //建立range的表，把能insert的空隙找出来
+  let ranges = []
+  let container = document.getElementById("container")
+  for (let i = 0; i< container.childNodes[0].textContent.length;i++) {
+      let range = document.createRange();
+      //  找到textnode的位置i
+      range.setStart(container.childNodes[0],i)
+      range.setEnd(container.childNodes[0],i)
+      console.log(range.getBoundingClientRect());
+      ranges.push(range)
+    
+  }
+  //从range里面找出离开某个point最近range
+  function getNearest(x,y){
+      let min = Infinity
+      let nearest = null;
+      for(let range of ranges) {
+          // 一旦界面发生变化，getBoundingClientRect也会每次出来不一样，所以开始不用存
+          let rect = range.getBoundingClientRect()
+        let distance = (rect.x-x)**2+(rect.y-y)**2
+        if(distance < min){
+            nearest = range;
+            min = distance
         }
-        return nearest
-    }
+      }
+      return nearest;
+
+  }
+  document.addEventListener("selectstart",event=>event.preventDefault());
 </script>
-</body>
-</html>
